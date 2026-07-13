@@ -14,4 +14,4 @@ API: **http://localhost:8000/api/v1**
 
 Update `.env` with your PostgreSQL credentials before migrating.
 
-Note: And in postman collection you will found the postmand collection and environment files
+Note: And in postman folder you will found the postmand collection and environment files
