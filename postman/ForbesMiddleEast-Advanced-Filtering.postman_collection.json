@@ -1,0 +1,511 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Forbes Middle East - Advanced Filtering API",
+		"description": "List APIs with advanced filtering, global search, sorting, and pagination.\n\nBase path: `/api/v1`\n\n### Query parameters\n| Parameter | Description |\n|-----------|-------------|\n| `filters[n][field]` | Field name (supports dot notation for relations, e.g. `author.name`) |\n| `filters[n][operator]` | Filter operator (see Operators folder) |\n| `filters[n][value]` | Filter value (optional for `empty` / `not_empty`) |\n| `search` | Global search across configured fields and relations |\n| `sort` | Comma-separated fields; prefix with `-` for descending |\n| `page` | Page number (default: 1) |\n| `per_page` | Items per page (default: 15, max: 100) |",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api/v1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Articles",
+			"item": [
+				{
+					"name": "List Articles (default)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"]
+						},
+						"description": "Default paginated list with eager-loaded author, category (with parent), and tags."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Title Contains",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=title&filters[0][operator]=contains&filters[0][value]=Forbes",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "title"},
+								{"key": "filters[0][operator]", "value": "contains"},
+								{"key": "filters[0][value]", "value": "Forbes"}
+							]
+						},
+						"description": "Text matching on the title field."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Status Exact + View Count GTE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=status&filters[0][operator]=eq&filters[0][value]=published&filters[1][field]=view_count&filters[1][operator]=gte&filters[1][value]=1000",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "status"},
+								{"key": "filters[0][operator]", "value": "eq"},
+								{"key": "filters[0][value]", "value": "published"},
+								{"key": "filters[1][field]", "value": "view_count"},
+								{"key": "filters[1][operator]", "value": "gte"},
+								{"key": "filters[1][value]", "value": "1000"}
+							]
+						},
+						"description": "Exact match on status combined with numeric greater-than-or-equal comparison."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Published Date Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=published_at&filters[0][operator]=gte&filters[0][value]=2025-01-01&filters[1][field]=published_at&filters[1][operator]=lte&filters[1][value]=2025-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "published_at"},
+								{"key": "filters[0][operator]", "value": "gte"},
+								{"key": "filters[0][value]", "value": "2025-01-01"},
+								{"key": "filters[1][field]", "value": "published_at"},
+								{"key": "filters[1][operator]", "value": "lte"},
+								{"key": "filters[1][value]", "value": "2025-12-31"}
+							]
+						},
+						"description": "Date comparison using gte and lte operators."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Multiple Statuses (IN)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=status&filters[0][operator]=in&filters[0][value]=draft,published",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "status"},
+								{"key": "filters[0][operator]", "value": "in"},
+								{"key": "filters[0][value]", "value": "draft,published"}
+							]
+						},
+						"description": "Filter by multiple selected values (comma-separated)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Empty Excerpt",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=excerpt&filters[0][operator]=empty",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "excerpt"},
+								{"key": "filters[0][operator]", "value": "empty"}
+							]
+						},
+						"description": "Find articles where excerpt is NULL or empty."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Author Name (Relation)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=author.name&filters[0][operator]=contains&filters[0][value]=Sarah",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "author.name"},
+								{"key": "filters[0][operator]", "value": "contains"},
+								{"key": "filters[0][value]", "value": "Sarah"}
+							]
+						},
+						"description": "Filter by a related model field (author.name)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Category Parent Name (Nested Relation)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=category.parent.name&filters[0][operator]=eq&filters[0][value]=Business",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "category.parent.name"},
+								{"key": "filters[0][operator]", "value": "eq"},
+								{"key": "filters[0][value]", "value": "Business"}
+							]
+						},
+						"description": "Filter by a nested related model field (category.parent.name)."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Tag Name (Many-to-Many)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?filters[0][field]=tags.name&filters[0][operator]=eq&filters[0][value]=Technology",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "filters[0][field]", "value": "tags.name"},
+								{"key": "filters[0][operator]", "value": "eq"},
+								{"key": "filters[0][value]", "value": "Technology"}
+							]
+						},
+						"description": "Filter articles by tag name through a many-to-many relationship."
+					},
+					"response": []
+				},
+				{
+					"name": "Search + Sort + Pagination",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/articles?search=market&sort=-view_count,title&page=2&per_page=25",
+							"host": ["{{baseUrl}}"],
+							"path": ["articles"],
+							"query": [
+								{"key": "search", "value": "market"},
+								{"key": "sort", "value": "-view_count,title"},
+								{"key": "page", "value": "2"},
+								{"key": "per_page", "value": "25"}
+							]
+						},
+						"description": "Global search with multi-field sort and pagination."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authors",
+			"item": [
+				{
+					"name": "List Authors (default)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/authors",
+							"host": ["{{baseUrl}}"],
+							"path": ["authors"]
+						},
+						"description": "Default paginated list with eager-loaded user."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Articles Count GT + Sort by Rating",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/authors?filters[0][field]=articles_count&filters[0][operator]=gt&filters[0][value]=100&sort=-rating",
+							"host": ["{{baseUrl}}"],
+							"path": ["authors"],
+							"query": [
+								{"key": "filters[0][field]", "value": "articles_count"},
+								{"key": "filters[0][operator]", "value": "gt"},
+								{"key": "filters[0][value]", "value": "100"},
+								{"key": "sort", "value": "-rating"}
+							]
+						},
+						"description": "Numeric comparison on articles_count with descending rating sort."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - User Email (Relation)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/authors?filters[0][field]=user.email&filters[0][operator]=contains&filters[0][value]=@forbes",
+							"host": ["{{baseUrl}}"],
+							"path": ["authors"],
+							"query": [
+								{"key": "filters[0][field]", "value": "user.email"},
+								{"key": "filters[0][operator]", "value": "contains"},
+								{"key": "filters[0][value]", "value": "@forbes"}
+							]
+						},
+						"description": "Filter authors by related user email."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "List Categories (default)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["categories"]
+						},
+						"description": "Default paginated list with eager-loaded parent category."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Active + Parent Name Not Empty",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/categories?filters[0][field]=is_active&filters[0][operator]=eq&filters[0][value]=1&filters[1][field]=parent.name&filters[1][operator]=not_empty",
+							"host": ["{{baseUrl}}"],
+							"path": ["categories"],
+							"query": [
+								{"key": "filters[0][field]", "value": "is_active"},
+								{"key": "filters[0][operator]", "value": "eq"},
+								{"key": "filters[0][value]", "value": "1"},
+								{"key": "filters[1][field]", "value": "parent.name"},
+								{"key": "filters[1][operator]", "value": "not_empty"}
+							]
+						},
+						"description": "Filter active child categories that have a parent with a non-empty name."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tags",
+			"item": [
+				{
+					"name": "List Tags (default)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tags",
+							"host": ["{{baseUrl}}"],
+							"path": ["tags"]
+						},
+						"description": "Default paginated list of tags."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Usage Count GTE + Sort",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/tags?filters[0][field]=usage_count&filters[0][operator]=gte&filters[0][value]=500&sort=-usage_count",
+							"host": ["{{baseUrl}}"],
+							"path": ["tags"],
+							"query": [
+								{"key": "filters[0][field]", "value": "usage_count"},
+								{"key": "filters[0][operator]", "value": "gte"},
+								{"key": "filters[0][value]", "value": "500"},
+								{"key": "sort", "value": "-usage_count"}
+							]
+						},
+						"description": "Filter tags by minimum usage count, sorted by usage descending."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "List Comments (default)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/comments",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments"]
+						},
+						"description": "Default paginated list with eager-loaded article (and author) and user."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Rating GTE + Article Title",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/comments?filters[0][field]=rating&filters[0][operator]=gte&filters[0][value]=4&filters[1][field]=article.title&filters[1][operator]=contains&filters[1][value]=Market",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments"],
+							"query": [
+								{"key": "filters[0][field]", "value": "rating"},
+								{"key": "filters[0][operator]", "value": "gte"},
+								{"key": "filters[0][value]", "value": "4"},
+								{"key": "filters[1][field]", "value": "article.title"},
+								{"key": "filters[1][operator]", "value": "contains"},
+								{"key": "filters[1][value]", "value": "Market"}
+							]
+						},
+						"description": "Filter comments by rating and related article title."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter - Article Author Name + Search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/comments?filters[0][field]=article.author.name&filters[0][operator]=eq&filters[0][value]=Jane Doe&search=insightful",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments"],
+							"query": [
+								{"key": "filters[0][field]", "value": "article.author.name"},
+								{"key": "filters[0][operator]", "value": "eq"},
+								{"key": "filters[0][value]", "value": "Jane Doe"},
+								{"key": "search", "value": "insightful"}
+							]
+						},
+						"description": "Nested relation filter (article.author.name) combined with global search."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
